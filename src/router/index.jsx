@@ -3,8 +3,8 @@ import { useAuthStore } from "@/store/authStore";
 import Login from "@/pages/Login";
 import Register from '@/pages/Register'
 import SetupUsername  from '@/pages/SetupUsername'
-/*import Dashboard from "@/pages/Dashboard";
-import Lesson from "@/pages/Lesson";
+import Dashboard from "@/pages/Dashboard";
+/*import Lesson from "@/pages/Lesson";
 import Exercise from "@/pages/Exercise";
 import Profile from "@/pages/Profile";*/
 
@@ -25,7 +25,7 @@ export default function Router() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/setup-username" element={<SetupUsername />} />
-      {/* 
+      
       <Route
         path="/"
         element={
@@ -34,6 +34,7 @@ export default function Router() {
           </ProtectedRoute>
         }
       />
+      {/* 
       <Route
         path="/lesson/:id"
         element={
@@ -58,7 +59,7 @@ export default function Router() {
           </ProtectedRoute>
         }
       />*/}
-      <Route path="*" element={<Navigate to="/login" replace />} /> 
+      <Route path="*" element={<Navigate to="/" replace />} /> 
     </Routes>
   );
 }
