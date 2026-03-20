@@ -1,29 +1,27 @@
-import axios from "axios";
+import axios from 'axios'
+import { supabase } from '@/lib/supabase'
 
 const api = axios.create({
-  // Crea una instancia de Axios con la configuración base
-  baseURL: import.meta.env.VITE_API_URL, // Usa la variable de entorno para la URL del backend
-  headers: { "Content-Type": "application/json" }, // Configura el encabezado para enviar JSON
-});
+  baseURL: import.meta.env.VITE_API_URL,
+  headers: { 'Content-Type': 'application/json' },
+})
 
-api.interceptors.request.use((config) => {
-  // Interceptor para agregar el token de autenticación a cada solicitud
-  const token = localStorage.getItem("token"); // Obtiene el token del almacenamiento local
-  if (token) config.headers.Authorization = `Bearer ${token}`; // Agrega el token al encabezado de autorización si existe
-  return config;
-});
+api.interceptors.request.use(async (config) => {
+  const { data } = await supabase.auth.getSession()
+  const token = data.session?.access_token
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
 
 api.interceptors.response.use(
-  // Interceptor para manejar respuestas y errores globalmente
-  (res) => res, // Devuelve la respuesta sin modificar si es exitosa
+  (res) => res,
   (error) => {
-    // Maneja errores, especialmente el error 401 (no autorizado)
     if (error.response?.status === 401) {
-      localStorage.removeItem("token"); // Elimina el token del almacenamiento local si la respuesta es 401
-      window.location.href = "/login"; // Redirige al usuario a la página de inicio de sesión
+      supabase.auth.signOut()
+      window.location.href = '/login'
     }
-    return Promise.reject(error); // Rechaza la promesa con el error para que pueda ser manejado por el código que hizo la solicitud
-  },
-);
+    return Promise.reject(error)
+  }
+)
 
-export default api;
+export default api

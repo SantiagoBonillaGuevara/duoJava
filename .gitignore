@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Build
+dist/
+
+# Variables de entorno — NUNCA al repo
+.env
+.env.local
+.env.production
+.env.*.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +31,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
