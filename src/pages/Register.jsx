@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { useUsernameCheck } from "@/hooks/useUsernameCheck";
+import { signInWithGoogle } from "@/lib/supabase";
 import Logo from "@/components/ui/Logo";
 import GoogleIcon from "@/components/ui/GoogleIcon";
 
@@ -33,6 +35,8 @@ export default function Register() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const { available, checking } = useUsernameCheck(form.username);
+
   const strength = passwordStrength(form.password);
 
   const handleChange = (e) => {
@@ -42,9 +46,13 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!available) {
+      setError("Please choose an available username.");
+      return;
+    }
     setLoading(true);
     try {
-      const { _, error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
         options: {
@@ -55,11 +63,25 @@ export default function Register() {
         },
       });
       if (error) throw error;
+      // Email ya registrado → Supabase devuelve identities vacío
+      if (data?.user?.identities?.length === 0) {
+        setError("An account with this email already exists. Please log in.");
+        return;
+      }
       navigate("/login");
     } catch (err) {
       setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      // Supabase redirige automáticamente, no necesitas hacer nada más aquí
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -182,16 +204,44 @@ export default function Register() {
                   type="text"
                   placeholder="username"
                   value={form.username}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      username: e.target.value
+                        .toLowerCase()
+                        .replace(/[^a-z0-9_]/g, ""),
+                    })
+                  }
                   required
+                  minLength={3}
+                  maxLength={20}
                   className="w-full pl-9 pr-10 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-[#6324eb] focus:border-transparent outline-none transition-all"
                 />
-                {form.username.length > 2 && (
-                  <span className="material-symbols-outlined absolute right-3 text-emerald-500 text-xl">
-                    check_circle
-                  </span>
-                )}
+                <span className="absolute right-3 text-xl">
+                  {checking ? (
+                    <span className="text-slate-400 material-symbols-outlined text-base">
+                      sync
+                    </span>
+                  ) : available === true ? (
+                    <span className="text-emerald-500 material-symbols-outlined">
+                      check_circle
+                    </span>
+                  ) : available === false ? (
+                    <span className="text-red-500 material-symbols-outlined">
+                      cancel
+                    </span>
+                  ) : null}
+                </span>
               </div>
+              {available === false && (
+                <p className="text-xs text-red-400">Username already taken</p>
+              )}
+              {available === true && (
+                <p className="text-xs text-emerald-400">Username available!</p>
+              )}
+              <p className="text-xs text-slate-500">
+                Only letters, numbers and underscores. 3-20 characters.
+              </p>
             </div>
 
             {/* Email */}
@@ -259,6 +309,7 @@ export default function Register() {
 
             <button
               type="button"
+              onClick={handleGoogleSignIn}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium transition-all"
             >
               <GoogleIcon />

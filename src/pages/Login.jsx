@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { supabase } from "@/lib/supabase";
-import api from "@/api/axios";
+import { signInWithGoogle } from "@/lib/supabase";
+import { getMyProfile } from "@/api/endpoints";
 import Logo from "@/components/ui/Logo";
 import GoogleIcon from "@/components/ui/GoogleIcon";
 
@@ -33,7 +34,7 @@ export default function Login() {
 
       // 2. Perfil lo pide a Spring Boot con el JWT de Supabase
       // axios ya manda el token automáticamente en el header
-      const { data: profile } = await api.get("/users/me");
+      const { data: profile } = await getMyProfile();
 
       // 3. Guarda sesión de Supabase + perfil de Spring Boot
       setAuth({ ...data.user, ...profile }, data.session);
@@ -42,6 +43,15 @@ export default function Login() {
       setError(err.message || "Invalid credentials. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      // Supabase redirige automáticamente, no necesitas hacer nada más aquí
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -218,7 +228,10 @@ export default function Login() {
           </div>
 
           {/* Google */}
-          <button className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#1E293B] py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+          <button
+            onClick={handleGoogleSignIn}
+            className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#1E293B] py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+          >
             <GoogleIcon />
             Continue with Google
           </button>

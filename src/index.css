@@ -3,7 +3,14 @@
 @theme {
   --color-primary: #6324eb;
   --color-background-dark: #161121;
-  --color-slate-custom: #0F172A;
-  --color-card-custom: #1E293B;
+  --color-slate-custom: #0f172a;
+  --color-card-custom: #1e293b;
   --font-display: "Inter", sans-serif;
+}
+.filled-icon {
+  font-variation-settings:
+    "FILL" 1,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
 }

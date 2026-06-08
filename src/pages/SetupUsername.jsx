@@ -1,65 +1,81 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
-import api from "@/api/axios";
-
-const DuoJavaLogo = () => (
-  <svg className="size-full" fill="none" viewBox="0 0 48 48">
-    <path
-      d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z"
-      fill="currentColor"
-    />
-  </svg>
-);
+import { useUsernameCheck } from "@/hooks/useUsernameCheck";
+import { supabase } from "@/lib/supabase";
+import Logo from "@/components/ui/Logo";
 
 export default function SetupUsername() {
   const navigate = useNavigate();
-  const { session, user, setAuth } = useAuthStore();
+  const { session, user, setAuth, logout } = useAuthStore();
 
   const [username, setUsername] = useState("");
-  const [available, setAvailable] = useState(null);
-  const [checking, setChecking] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Verificar disponibilidad con debounce — esta sí puede ir directo
-  // a Supabase porque es solo una consulta pública de disponibilidad
-  // sin exponer datos sensibles
+  const { available, checking } = useUsernameCheck(username);
+
   useEffect(() => {
-    if (username.length < 3) {
-      setAvailable(null);
+    // Esperar a que el store hidrate antes de redirigir
+    if (session === undefined) return; // todavía cargando
+
+    if (!session) {
+      navigate("/login");
       return;
     }
-    const timer = setTimeout(async () => {
-      setChecking(true);
-      try {
-        // Verificar disponibilidad por Spring Boot
-        const { data } = await api.get(
-          `/users/username-available?username=${username}`,
-        );
-        setAvailable(data.available);
-      } catch {
-        setAvailable(null);
-      } finally {
-        setChecking(false);
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [username]);
+
+    if (user?.username) {
+      navigate("/dashboard");
+    }
+  }, [session, user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!available) return;
+    if (!available || checking) return;
     setLoading(true);
     try {
-      // Actualizar username por Spring Boot
-      const { data: profile } = await api.patch("/users/me", { username });
+      // Verificar sesión vigente antes de intentar guardar
+      const {
+        data: { session: currentSession },
+      } = await supabase.auth.getSession();
 
-      // Actualizar el store con el perfil actualizado
-      setAuth({ ...user, ...profile }, session);
-      navigate("/");
+      if (!currentSession) {
+        // Sesión expirada → limpiar store y mandar al login
+        logout();
+        navigate("/login");
+        return;
+      }
+      const { error: updateError, data: updated } = await supabase
+        .from("profiles")
+        .update({ username })
+        .eq("id", currentSession.user.id) // ✅ sesión fresca, no el store
+        .select("username")
+        .single();
+
+      if (updateError) throw updateError;
+
+      // Confirmar que realmente se escribió en BD
+      if (!updated?.username) {
+        throw new Error("Could not save username. Please try again.");
+      }
+
+      // Actualizar store con username nuevo
+      setAuth(
+        {
+          id: user.id,
+          email: user.email,
+          username, // el nuevo
+          displayName: user.displayName,
+          avatarUrl: user.avatarUrl,
+          xp: user.xp,
+          levelNumber: user.levelNumber,
+          streak: user.streak,
+        },
+        currentSession,
+      );
+      navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong.");
+      setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -71,7 +87,7 @@ export default function SetupUsername() {
         {/* Logo */}
         <div className="flex items-center gap-3 text-white mb-10 justify-center">
           <div className="size-8 text-[#6324eb]">
-            <DuoJavaLogo />
+            <Logo />
           </div>
           <h2 className="text-2xl font-black tracking-tight">duoJava</h2>
         </div>
@@ -106,7 +122,6 @@ export default function SetupUsername() {
                     setUsername(
                       e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
                     );
-                    setAvailable(null);
                   }}
                   placeholder="username"
                   required

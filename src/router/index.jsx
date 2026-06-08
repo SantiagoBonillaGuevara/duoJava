@@ -1,22 +1,24 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import Login from "@/pages/Login";
-import Register from '@/pages/Register'
-import SetupUsername  from '@/pages/SetupUsername'
+import Register from "@/pages/Register";
+import AuthCallback from "@/pages/AuthCallback";
+import SetupUsername from "@/pages/SetupUsername";
 import Dashboard from "@/pages/Dashboard";
 /*import Lesson from "@/pages/Lesson";
 import Exercise from "@/pages/Exercise";
 import Profile from "@/pages/Profile";*/
 
 const ProtectedRoute = ({ children }) => {
-  const { session, user } = useAuthStore()
+  const { session, user } = useAuthStore();
 
-  // Sin sesión → al login
-  if (!session) return <Navigate to="/login" replace />
+  if (!session) return <Navigate to="/login" replace />;
 
-  // Con sesión pero sin username → a elegir username (solo pasa con Google)
-  if (!user?.username) return <Navigate to="/setup-username" replace />
-  return children
+  // Solo redirige a setup-username desde rutas protegidas (dashboard, etc.)
+  // No desde /auth/callback o /setup-username mismos
+  if (!user?.username) return <Navigate to="/setup-username" replace />;
+
+  return children;
 };
 
 export default function Router() {
@@ -25,7 +27,8 @@ export default function Router() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/setup-username" element={<SetupUsername />} />
-      
+      <Route path="/auth/callback" element={<AuthCallback />} />
+
       <Route
         path="/"
         element={
@@ -59,7 +62,7 @@ export default function Router() {
           </ProtectedRoute>
         }
       />*/}
-      <Route path="*" element={<Navigate to="/" replace />} /> 
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
