@@ -3,7 +3,7 @@ import { signOut } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "@/components/ui/Logo";
-import { getLevels } from "@/api/endpoints";
+import { getLevels, getCurrentCourse } from "@/api/endpoints";
 
 // Componentes extraídos para mantener Dashboard limpio
 const NavItem = ({ icon, label, to, active }) => (
@@ -47,6 +47,9 @@ export default function Dashboard() {
   const { user, logout } = useAuthStore();
   const [levels, setLevels] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentCourse, setCurrentCourse] = useState(null);
+  const [courseLoading, setCourseLoading] = useState(true);
+  const [courseError, setCourseError] = useState(null);
 
   useEffect(() => {
     const fetchLevels = async () => {
@@ -61,7 +64,29 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
+
+    const fetchCurrentCourse = async () => {
+      try {
+        setCourseLoading(true);
+        const { data } = await getCurrentCourse();
+        setCurrentCourse(data);
+        setCourseError(null);
+      } catch (error) {
+        if (error.response?.status === 404) {
+          setCourseError(
+            error.response.data?.detail || "No hay cursos disponibles",
+          );
+        } else {
+          console.error("Error fetching course:", error);
+          setCourseError("Error al cargar el curso");
+        }
+      } finally {
+        setCourseLoading(false);
+      }
+    };
+
     fetchLevels();
+    fetchCurrentCourse();
   }, []);
 
   const handleLogout = async () => {
@@ -233,9 +258,9 @@ export default function Dashboard() {
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
                       Total Experience
                     </span>
-                    <span 
+                    <span
                       className="text-xl font-black"
-                      style={{ color: currentLevel?.badgeColor || '#6324eb' }}
+                      style={{ color: currentLevel?.badgeColor || "#6324eb" }}
                     >
                       {user?.xp || 0}{" "}
                       <span className="text-slate-300 dark:text-slate-700 mx-1">
@@ -245,9 +270,9 @@ export default function Dashboard() {
                       <span className="text-sm ml-1 text-slate-400">XP</span>
                     </span>
                   </div>
-                  </div>
+                </div>
 
-                  <div className="space-y-2">
+                <div className="space-y-2">
                   <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-4 overflow-hidden p-1">
                     <div
                       className="h-full rounded-full transition-all duration-700 ease-out shadow-sm"
@@ -261,14 +286,25 @@ export default function Dashboard() {
                     />
                   </div>
                   <div className="mt-3 flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
-                    <span>{isMaxLevel ? currentLevel?.title || "Max Level" : `Level ${user?.levelNumber || 1}`}</span>
-                    <span style={{ color: currentLevel?.badgeColor || '#6324eb' }}>
-                      {isMaxLevel ? "100% Completed" : `${Math.round(xpProgress)}% Completed`}
+                    <span>
+                      {isMaxLevel
+                        ? currentLevel?.title || "Max Level"
+                        : `Level ${user?.levelNumber || 1}`}
                     </span>
-                    <span>{isMaxLevel ? "Master" : `Level ${nextLevel?.levelNumber || (user?.levelNumber || 1) + 1}`}</span>
+                    <span
+                      style={{ color: currentLevel?.badgeColor || "#6324eb" }}
+                    >
+                      {isMaxLevel
+                        ? "100% Completed"
+                        : `${Math.round(xpProgress)}% Completed`}
+                    </span>
+                    <span>
+                      {isMaxLevel
+                        ? "Master"
+                        : `Level ${nextLevel?.levelNumber || (user?.levelNumber || 1) + 1}`}
+                    </span>
                   </div>
-                  </div>
-
+                </div>
               </div>
             </div>
           </section>
@@ -297,53 +333,75 @@ export default function Dashboard() {
               </div>
 
               {/* Course Card */}
-              <div className="group relative bg-white dark:bg-[#1E293B] rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-xl transition-all">
-                <div className="aspect-video w-full bg-[#6324eb]/10 relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#6324eb]/20 to-transparent" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-8xl text-[#6324eb]/40">
-                      code
+              {courseLoading ? (
+                <div className="bg-white dark:bg-[#1E293B] rounded-3xl border border-slate-200 dark:border-slate-800 p-8 animate-pulse">
+                  <div className="h-48 bg-slate-200 dark:bg-slate-700 rounded-2xl mb-6"></div>
+                  <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded-lg w-1/3 mb-4"></div>
+                  <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-lg w-2/3"></div>
+                </div>
+              ) : courseError ? (
+                <div className="bg-white dark:bg-[#1E293B] rounded-3xl border border-slate-200 dark:border-slate-800 p-12 text-center">
+                  <div className="bg-slate-100 dark:bg-slate-800 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="material-symbols-outlined text-slate-400 text-3xl">
+                      sentiment_dissatisfied
                     </span>
                   </div>
-                  <div className="absolute top-4 right-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#6324eb] border border-[#6324eb]/20">
-                    JAVA CORE
-                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                    {courseError}
+                  </h3>
+                  <p className="text-slate-500 dark:text-slate-400">
+                    Pronto tendremos nuevos desafíos para ti.
+                  </p>
                 </div>
-                <div className="p-8">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">
-                        Java Fundamentals
-                      </h3>
-                      <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-md">
-                        Master the basics of syntax, loops, and variables
-                        through interactive coding puzzles.
-                      </p>
+              ) : (
+                currentCourse && (
+                  <div className="group relative bg-white dark:bg-[#1E293B] rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-xl transition-all">
+                    <div className="aspect-video w-full bg-[#6324eb]/10 relative">
+                      <div className="absolute inset-0 bg-gradient-to-br from-[#6324eb]/20 to-transparent" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-8xl text-[#6324eb]/40">
+                          code
+                        </span>
+                      </div>
+                      <div className="absolute top-4 right-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#6324eb] border border-[#6324eb]/20">
+                        JAVA CORE
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <span className="text-3xl font-black text-[#6324eb]">
-                        60%
-                      </span>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">
-                        Complete
-                      </p>
+                    <div className="p-8">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">
+                            {currentCourse.title}
+                          </h3>
+                          <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-md">
+                            {currentCourse.description}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-3xl font-black text-[#6324eb]">
+                            {currentCourse.progressPercent}%
+                          </span>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">
+                            Complete
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                        <button className="flex-1 bg-[#6324eb] text-white py-3.5 rounded-2xl font-bold hover:bg-[#6324eb]/90 transition-colors flex items-center justify-center gap-2">
+                          <span className="material-symbols-outlined filled-icon">
+                            {currentCourse.isCompleted
+                              ? "replay"
+                              : "play_arrow"}
+                          </span>
+                          {currentCourse.isCompleted
+                            ? "Review Course"
+                            : "Continue Learning"}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <button className="flex-1 bg-[#6324eb] text-white py-3.5 rounded-2xl font-bold hover:bg-[#6324eb]/90 transition-colors flex items-center justify-center gap-2">
-                      <span className="material-symbols-outlined filled-icon">
-                        play_arrow
-                      </span>
-                      Continue Learning
-                    </button>
-                    <button className="p-3.5 border border-slate-200 dark:border-slate-700 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                      <span className="material-symbols-outlined text-slate-600 dark:text-slate-400">
-                        bookmark
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </div>
+                )
+              )}
             </div>
 
             {/* Right Column */}
