@@ -4,6 +4,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useUsernameCheck } from "@/hooks/useUsernameCheck";
 import { supabase } from "@/lib/supabase";
 import Logo from "@/components/ui/Logo";
+import "@/styles/auth.css";
 
 export default function SetupUsername() {
   const navigate = useNavigate();
@@ -16,8 +17,7 @@ export default function SetupUsername() {
   const { available, checking } = useUsernameCheck(username);
 
   useEffect(() => {
-    // Esperar a que el store hidrate antes de redirigir
-    if (session === undefined) return; // todavía cargando
+    if (session === undefined) return;
 
     if (!session) {
       navigate("/login");
@@ -34,13 +34,11 @@ export default function SetupUsername() {
     if (!available || checking) return;
     setLoading(true);
     try {
-      // Verificar sesión vigente antes de intentar guardar
       const {
         data: { session: currentSession },
       } = await supabase.auth.getSession();
 
       if (!currentSession) {
-        // Sesión expirada → limpiar store y mandar al login
         logout();
         navigate("/login");
         return;
@@ -48,34 +46,26 @@ export default function SetupUsername() {
       const { error: updateError, data: updated } = await supabase
         .from("profiles")
         .update({ username })
-        .eq("id", currentSession.user.id) // ✅ sesión fresca, no el store
+        .eq("id", currentSession.user.id)
         .select("username")
         .single();
 
       if (updateError) throw updateError;
 
-      // Confirmar que realmente se escribió en BD
       if (!updated?.username) {
-        throw new Error("Could not save username. Please try again.");
+        throw new Error("No se pudo guardar el nombre de usuario. Por favor, inténtalo de nuevo.");
       }
 
-      // Actualizar store con username nuevo
       setAuth(
         {
-          id: user.id,
-          email: user.email,
-          username, // el nuevo
-          displayName: user.displayName,
-          avatarUrl: user.avatarUrl,
-          xp: user.xp,
-          levelNumber: user.levelNumber,
-          streak: user.streak,
+          ...user,
+          username,
         },
         currentSession,
       );
       navigate("/dashboard");
     } catch (err) {
-      setError(err.message || "Something went wrong.");
+      setError(err.message || "Algo salió mal.");
     } finally {
       setLoading(false);
     }
@@ -92,12 +82,12 @@ export default function SetupUsername() {
           <h2 className="text-2xl font-black tracking-tight">duoJava</h2>
         </div>
 
-        <div className="bg-[#1E293B] rounded-2xl p-8 border border-slate-800">
+        <div className="auth-card !max-w-md">
           <h2 className="text-2xl font-bold text-white mb-2">
-            Choose your username
+            Elige tu nombre de usuario
           </h2>
           <p className="text-slate-400 mb-8">
-            This is how other learners will find you.
+            Así es como otros estudiantes te encontrarán.
           </p>
 
           {error && (
@@ -107,14 +97,12 @@ export default function SetupUsername() {
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            <div className="flex flex-col gap-1.5">
+            <div className="auth-input-group">
               <label className="text-sm font-medium text-slate-300">
-                Username
+                Nombre de usuario
               </label>
               <div className="relative flex items-center">
-                <span className="absolute left-4 text-slate-500 select-none">
-                  @
-                </span>
+                <span className="absolute left-4 text-slate-500 select-none">@</span>
                 <input
                   type="text"
                   value={username}
@@ -123,15 +111,15 @@ export default function SetupUsername() {
                       e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
                     );
                   }}
-                  placeholder="username"
+                  placeholder="usuario"
                   required
                   minLength={3}
                   maxLength={20}
-                  className="w-full pl-9 pr-10 py-3 rounded-lg border border-slate-700 bg-slate-900 text-white focus:ring-2 focus:ring-[#6324eb] focus:border-transparent outline-none transition-all"
+                  className="auth-input pl-9 pr-10"
                 />
                 <span className="absolute right-3 material-symbols-outlined text-xl">
                   {checking ? (
-                    <span className="text-slate-400 text-sm">...</span>
+                    <span className="text-slate-400 text-sm animate-spin">sync</span>
                   ) : available === true ? (
                     <span className="text-emerald-500">check_circle</span>
                   ) : available === false ? (
@@ -139,23 +127,17 @@ export default function SetupUsername() {
                   ) : null}
                 </span>
               </div>
-              {available === false && (
-                <p className="text-xs text-red-400">Username already taken</p>
-              )}
-              {available === true && (
-                <p className="text-xs text-emerald-400">Username available!</p>
-              )}
-              <p className="text-xs text-slate-500">
-                Only letters, numbers and underscores. 3-20 characters.
-              </p>
+              {available === false && <p className="text-xs text-red-400">Nombre de usuario ya ocupado</p>}
+              {available === true && <p className="text-xs text-emerald-400">¡Nombre de usuario disponible!</p>}
+              <p className="text-xs text-slate-500">Solo letras, números y guiones bajos. 3-20 caracteres.</p>
             </div>
 
             <button
               type="submit"
               disabled={!available || loading}
-              className="w-full bg-[#6324eb] hover:bg-[#6324eb]/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-lg transition-all active:scale-[0.98]"
+              className="auth-button-primary"
             >
-              {loading ? "Saving..." : "Continue →"}
+              {loading ? "Guardando..." : "Continuar →"}
             </button>
           </form>
         </div>

@@ -50,13 +50,14 @@ export default function AuthCallback() {
     };
 
     handle();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#161121]">
       <div className="flex flex-col items-center gap-4">
         <div className="size-8 animate-spin rounded-full border-2 border-[#6324eb] border-t-transparent" />
-        <p className="text-slate-400 text-sm">Signing you in...</p>
+        <p className="text-slate-400 text-sm">Iniciando sesión...</p>
       </div>
     </div>
   );
