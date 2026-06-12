@@ -1,7 +1,10 @@
+import { useLocation } from "react-router-dom";
 import NavItem from "./NavItem";
 import Logo from "@/components/ui/Logo";
 
 const Sidebar = ({ user, onLogout }) => {
+  const location = useLocation();
+
   return (
     <aside className="dashboard-sidebar">
       <div className="flex flex-col gap-8">
@@ -17,10 +20,30 @@ const Sidebar = ({ user, onLogout }) => {
 
         {/* Nav */}
         <nav className="flex flex-col gap-2">
-          <NavItem icon="home" label="Inicio" to="/" active />
-          <NavItem icon="menu_book" label="Lecciones" to="/lessons" />
-          <NavItem icon="leaderboard" label="Clasificación" to="/leaderboard" />
-          <NavItem icon="person" label="Perfil" to="/profile" />
+          <NavItem 
+            icon="home" 
+            label="Inicio" 
+            to="/" 
+            active={location.pathname === "/"} 
+          />
+          <NavItem 
+            icon="menu_book" 
+            label="Cursos" 
+            to="/courses" 
+            active={location.pathname === "/courses"} 
+          />
+          <NavItem 
+            icon="leaderboard" 
+            label="Clasificación" 
+            to="/leaderboard" 
+            active={location.pathname === "/leaderboard"} 
+          />
+          <NavItem 
+            icon="person" 
+            label="Perfil" 
+            to="/profile" 
+            active={location.pathname === "/profile"} 
+          />
         </nav>
       </div>
 

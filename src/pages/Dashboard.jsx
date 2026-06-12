@@ -136,6 +136,7 @@ export default function Dashboard() {
             xpRequiredForNext={xpRequiredForNext}
             xpProgress={xpProgress}
             nextLevel={nextLevel}
+            loading={loading}
           />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

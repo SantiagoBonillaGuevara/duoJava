@@ -5,6 +5,7 @@ import Register from "@/pages/Register";
 import AuthCallback from "@/pages/AuthCallback";
 import SetupUsername from "@/pages/SetupUsername";
 import Dashboard from "@/pages/Dashboard";
+import Courses from "@/pages/Courses";
 /*import Lesson from "@/pages/Lesson";
 import Exercise from "@/pages/Exercise";
 import Profile from "@/pages/Profile";*/
@@ -34,6 +35,14 @@ export default function Router() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/courses"
+        element={
+          <ProtectedRoute>
+            <Courses />
           </ProtectedRoute>
         }
       />
