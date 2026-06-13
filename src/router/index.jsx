@@ -6,9 +6,8 @@ import AuthCallback from "@/pages/AuthCallback";
 import SetupUsername from "@/pages/SetupUsername";
 import Dashboard from "@/pages/Dashboard";
 import Courses from "@/pages/Courses";
-/*import Lesson from "@/pages/Lesson";
-import Exercise from "@/pages/Exercise";
-import Profile from "@/pages/Profile";*/
+import Profile from "@/pages/Profile";
+import Leaderboard from "@/pages/Leaderboard";
 
 const ProtectedRoute = ({ children }) => {
   const { session, user } = useAuthStore();
@@ -46,6 +45,22 @@ export default function Router() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/leaderboard"
+        element={
+          <ProtectedRoute>
+            <Leaderboard />
+          </ProtectedRoute>
+        }
+      />
       {/* 
       <Route
         path="/lesson/:id"
@@ -63,14 +78,7 @@ export default function Router() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />*/}
+      */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

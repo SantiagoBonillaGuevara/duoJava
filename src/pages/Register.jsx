@@ -38,6 +38,7 @@ export default function Register() {
 
   const { available, checking } = useUsernameCheck(form.username);
   const strength = passwordStrength(form.password);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -147,13 +148,10 @@ export default function Register() {
           <div className="auth-input-group">
             <label className="auth-label">Nombre de usuario</label>
             <div className="relative flex items-center">
-              <span className="absolute left-4 text-slate-500 select-none">
-                @
-              </span>
               <input
                 name="username"
                 type="text"
-                placeholder="usuario"
+                placeholder="@ usuario"
                 value={form.username}
                 onChange={(e) =>
                   setForm({
@@ -214,17 +212,28 @@ export default function Register() {
 
           <div className="auth-input-group">
             <label className="auth-label">Contraseña</label>
-            <input
-              name="password"
-              type="password"
-              placeholder="Crea una contraseña"
-              value={form.password}
-              onChange={handleChange}
-              required
-              className="auth-input"
-            />
+            <div className="relative">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Crea una contraseña"
+                value={form.password}
+                onChange={handleChange}
+                required
+                className="auth-input pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center justify-center"
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  {showPassword ? "visibility_off" : "visibility"}
+                </span>
+              </button>
+            </div>
             {form.password && (
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 mt-2">
                 <div className="password-strength-meter">
                   <div
                     className={`h-full rounded-full transition-all duration-300 ${strength.color}`}

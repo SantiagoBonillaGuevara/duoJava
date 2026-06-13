@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { getMyProfile } from "@/api/endpoints";
 import { useAuthStore } from "@/store/authStore";
 
 export default function AuthCallback() {
@@ -21,11 +22,7 @@ export default function AuthCallback() {
       }
 
       // Traer el perfil de la BD (la fuente de verdad del username)
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("username, display_name, avatar_url, xp, level_number, streak")
-        .eq("id", session.user.id)
-        .single();
+      const { data: profile } = await getMyProfile();
 
       // Poblar el store correctamente
       setAuth(
@@ -33,11 +30,14 @@ export default function AuthCallback() {
           id: session.user.id,
           email: session.user.email,
           username: profile?.username ?? null,
-          displayName: profile?.display_name ?? null,
-          avatarUrl: profile?.avatar_url ?? null,
+          displayName: profile?.displayName ?? null,
+          avatarUrl: profile?.avatarUrl ?? null,
+          googleAvatarUrl: profile?.googleAvatarUrl ?? null,
           xp: profile?.xp ?? 0,
-          levelNumber: profile?.level_number ?? 1,
+          levelNumber: profile?.levelNumber ?? 1,
           streak: profile?.streak ?? 0,
+          completedLessons: profile?.completedLessons ?? 0,
+          completedCourses: profile?.completedCourses ?? 0,
         },
         session,
       );

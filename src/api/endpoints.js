@@ -6,3 +6,4 @@ export const isUsernameAvailable = (username) =>
   api.get(`/users/username-available?username=${username}`);
 export const getCurrentCourse = () => api.get("/courses/current");
 export const getCoursesProgress = () => api.get("/courses/progress");
+export const getLeaderboard = () => api.get("/leaderboard");

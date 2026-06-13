@@ -16,9 +16,12 @@ export const useAuthStore = create(
             username: user.username,
             displayName: user.displayName,
             avatarUrl: user.avatarUrl,
+            googleAvatarUrl: user.googleAvatarUrl,
             xp: user.xp,
             levelNumber: user.levelNumber,
             streak: user.streak,
+            completedLessons: user.completedLessons,
+            completedCourses: user.completedCourses,
           },
         }),
 
