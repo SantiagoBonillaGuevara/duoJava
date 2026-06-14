@@ -1,27 +1,22 @@
 import { useState, useEffect } from "react";
-import { signOut } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
-import { useNavigate } from "react-router-dom";
-import { getLevels, getCurrentCourse } from "@/api/endpoints";
-
-// Dashboard Components
-import Sidebar from "@/components/dashboard/Sidebar";
-import XPProgress from "@/components/dashboard/XPProgress";
+import { getLevels } from "@/api/endpoints";
+import { useCurrentCourse } from "@/hooks/useCurrentCourse";
+// Components
+import Sidebar from "@/components/nav/Sidebar";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import XPProgress from "@/components/dashboard/XPProgress/XPProgress";
 import DailyChallenge from "@/components/dashboard/DailyChallenge";
 import CourseCard from "@/components/dashboard/CourseCard";
 import RecentActivity from "@/components/dashboard/RecentActivity";
-
 // Styles
 import "@/styles/dashboard.css";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const [levels, setLevels] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentCourse, setCurrentCourse] = useState(null);
-  const [courseLoading, setCourseLoading] = useState(true);
-  const [courseError, setCourseError] = useState(null);
+  const { currentCourse, courseLoading, courseError } = useCurrentCourse();
 
   useEffect(() => {
     const fetchLevels = async () => {
@@ -36,41 +31,8 @@ export default function Dashboard() {
       }
     };
 
-    const fetchCurrentCourse = async () => {
-      try {
-        setCourseLoading(true);
-        const { data } = await getCurrentCourse();
-        setCurrentCourse(data);
-        setCourseError(null);
-      } catch (error) {
-        if (error.response?.status === 404) {
-          setCourseError(
-            error.response.data?.detail || "No hay cursos disponibles",
-          );
-        } else {
-          console.error("Error fetching course:", error);
-          setCourseError("Error al cargar el curso");
-        }
-      } finally {
-        setCourseLoading(false);
-      }
-    };
-
     fetchLevels();
-    fetchCurrentCourse();
   }, []);
-
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      logout();
-      navigate("/login");
-    } catch (err) {
-      console.error("Logout error:", err);
-      logout();
-      navigate("/login");
-    }
-  };
 
   // Logic for XP Progress
   const currentLevelNumber = user?.levelNumber || 1;
@@ -102,33 +64,11 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      <Sidebar user={user} onLogout={handleLogout} />
-
+      <Sidebar user={user} />
       {/* Main Content */}
       <main className="dashboard-main">
         <div className="dashboard-content-wrapper">
-          {/* Header */}
-          <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                ¡Bienvenido de nuevo, {user?.displayName?.split(" ")[0]}!
-              </h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-1">
-                ¿Listo para dominar Java hoy?
-              </p>
-            </div>
-            {user?.streak > 0 && (
-              <div className="flex items-center bg-[#F97316]/10 border border-[#F97316]/20 px-4 py-2 rounded-full w-fit">
-                <span className="text-[#F97316] font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined filled-icon">
-                    local_fire_department
-                  </span>
-                  {user.streak} días de racha
-                </span>
-              </div>
-            )}
-          </header>
-
+          <DashboardHeader user={user} />
           <XPProgress
             currentLevel={currentLevel}
             user={user}

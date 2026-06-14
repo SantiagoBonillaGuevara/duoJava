@@ -1,58 +1,23 @@
-import { useState, useEffect, useMemo } from "react";
-import { signOut } from "@/lib/supabase";
+import { useState, useMemo } from "react";
 import { useAuthStore } from "@/store/authStore";
-import { useNavigate } from "react-router-dom";
-import { getCoursesProgress } from "@/api/endpoints";
+import { useCoursesProgress } from "@/hooks/useCoursesProgress";
 
-// Dashboard Components
-import Sidebar from "@/components/dashboard/Sidebar";
+// Components
+import Sidebar from "@/components/nav/Sidebar";
 
 // Styles
 import "@/styles/courses.css";
 
 export default function Courses() {
-  const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
-  const [courses, setCourses] = useState([]);
+  const { user } = useAuthStore();
+  const { courses, loading, error } = useCoursesProgress();
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        setLoading(true);
-        const { data } = await getCoursesProgress();
-        setCourses(data || []);
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching courses progress:", err);
-        setError("Error al cargar los cursos");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCourses();
-  }, []);
 
   const filteredCourses = useMemo(() => {
     return courses.filter((course) =>
       course.title.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [courses, searchTerm]);
-
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      logout();
-      navigate("/login");
-    } catch (err) {
-      console.error("Logout error:", err);
-      logout();
-      navigate("/login");
-    }
-  };
 
   const getStatusLabel = (status) => {
     switch (status) {
@@ -69,7 +34,7 @@ export default function Courses() {
 
   return (
     <div className="dashboard-container courses-container">
-      <Sidebar user={user} onLogout={handleLogout} />
+      <Sidebar user={user} />
 
       <main className="dashboard-main courses-main">
         <div className="dashboard-content-wrapper courses-content-wrapper">

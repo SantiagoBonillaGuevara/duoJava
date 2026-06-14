@@ -1,9 +1,14 @@
 import { useLocation } from "react-router-dom";
+import { useAuthStore } from "@/store/authStore";
+import { useNavigate } from "react-router-dom";
 import NavItem from "./NavItem";
 import Logo from "@/components/ui/Logo";
+import { handleLogout } from "@/utils/handleLogout";
 
-const Sidebar = ({ user, onLogout }) => {
+const Sidebar = ({ user }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuthStore();
 
   return (
     <aside className="dashboard-sidebar">
@@ -20,29 +25,29 @@ const Sidebar = ({ user, onLogout }) => {
 
         {/* Nav */}
         <nav className="flex flex-col gap-2">
-          <NavItem 
-            icon="home" 
-            label="Inicio" 
-            to="/" 
-            active={location.pathname === "/"} 
+          <NavItem
+            icon="home"
+            label="Inicio"
+            to="/"
+            active={location.pathname === "/"}
           />
-          <NavItem 
-            icon="menu_book" 
-            label="Cursos" 
-            to="/courses" 
-            active={location.pathname === "/courses"} 
+          <NavItem
+            icon="menu_book"
+            label="Cursos"
+            to="/courses"
+            active={location.pathname === "/courses"}
           />
-          <NavItem 
-            icon="leaderboard" 
-            label="Clasificación" 
-            to="/leaderboard" 
-            active={location.pathname === "/leaderboard"} 
+          <NavItem
+            icon="leaderboard"
+            label="Clasificación"
+            to="/leaderboard"
+            active={location.pathname === "/leaderboard"}
           />
-          <NavItem 
-            icon="person" 
-            label="Perfil" 
-            to="/profile" 
-            active={location.pathname === "/profile"} 
+          <NavItem
+            icon="person"
+            label="Perfil"
+            to="/profile"
+            active={location.pathname === "/profile"}
           />
         </nav>
       </div>
@@ -75,7 +80,7 @@ const Sidebar = ({ user, onLogout }) => {
             </span>
           </div>
           <button
-            onClick={onLogout}
+            onClick={() => handleLogout({ logout, navigate })}
             title="Cerrar sesión"
             className="ml-auto text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
           >

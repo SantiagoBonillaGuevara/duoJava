@@ -1,29 +1,15 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase, signInWithGoogle } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { useUsernameCheck } from "@/hooks/useUsernameCheck";
+import { handleGoogleSignIn } from "@/utils/handleGoogleSignIn";
 import GoogleIcon from "@/components/ui/GoogleIcon";
 import BrandingPanel from "@/components/auth/BrandingPanel";
 import AuthLayout from "@/components/auth/AuthLayout";
+import PasswordInput from "@/components/auth/PasswordInput";
 import "@/styles/auth.css";
 
-const passwordStrength = (password) => {
-  if (!password) return { label: "", color: "", width: "0%" };
-  if (password.length < 6)
-    return { label: "Débil", color: "bg-red-500", width: "25%" };
-  if (password.length < 10)
-    return { label: "Aceptable", color: "bg-yellow-500", width: "50%" };
-  if (!/[A-Z]/.test(password) || !/[0-9]/.test(password))
-    return { label: "Buena", color: "bg-blue-500", width: "75%" };
-  return { label: "Fuerte", color: "bg-emerald-500", width: "100%" };
-};
-
-const strengthColors = {
-  Débil: "text-red-500",
-  Aceptable: "text-yellow-500",
-  Buena: "text-blue-500",
-  Fuerte: "text-emerald-500",
-};
+import { passwordStrength, strengthColors } from "@/utils/password";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -38,7 +24,6 @@ export default function Register() {
 
   const { available, checking } = useUsernameCheck(form.username);
   const strength = passwordStrength(form.password);
-  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -78,14 +63,6 @@ export default function Register() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      await signInWithGoogle();
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
   const benefits = [
     { icon: "code", text: "Ejercicios de programación interactivos" },
     { icon: "emoji_events", text: "Gana XP y desbloquea logros" },
@@ -98,32 +75,7 @@ export default function Register() {
         title="Comienza tu racha hoy 🔥"
         subtitle="Únete a la plataforma gamificada de aprendizaje de Java diseñada para desarrolladores modernos."
         benefits={benefits}
-      >
-        <div className="code-card-container border-slate-700/50 rotate-1 hover:rotate-0">
-          <div className="flex gap-1.5 mb-4">
-            <div className="code-dot bg-red-500/50" />
-            <div className="code-dot bg-amber-500/50" />
-            <div className="code-dot bg-emerald-500/50" />
-          </div>
-          <pre className="font-mono text-sm">
-            <span className="text-purple-400">public class</span>{" "}
-            <span className="text-amber-300">DuoJava</span> {"{\n"}
-            {"  "}
-            <span className="text-purple-400">public static void</span>{" "}
-            <span className="text-blue-400">main</span>(String[] args) {"{\n"}
-            {"    "}System.out.println(
-            <span className="text-emerald-400">"Hello Coder!"</span>);{"\n"}
-            {"    "}
-            <span className="text-slate-500">
-              {"// Your journey begins..."}
-            </span>
-            {"\n"}
-            {"  }"}
-            {"\n"}
-            {"}"}
-          </pre>
-        </div>
-      </BrandingPanel>
+      />
 
       <AuthLayout
         title="Crea tu cuenta"
@@ -212,26 +164,11 @@ export default function Register() {
 
           <div className="auth-input-group">
             <label className="auth-label">Contraseña</label>
-            <div className="relative">
-              <input
-                name="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Crea una contraseña"
-                value={form.password}
-                onChange={handleChange}
-                required
-                className="auth-input pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center justify-center"
-              >
-                <span className="material-symbols-outlined text-[20px]">
-                  {showPassword ? "visibility_off" : "visibility"}
-                </span>
-              </button>
-            </div>
+            <PasswordInput
+              password={form.password}
+              placeholder="Crea una contraseña"
+              handleChange={handleChange}
+            />
             {form.password && (
               <div className="flex flex-col gap-1 mt-2">
                 <div className="password-strength-meter">

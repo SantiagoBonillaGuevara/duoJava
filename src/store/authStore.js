@@ -25,6 +25,11 @@ export const useAuthStore = create(
           },
         }),
 
+      updateUser: (updatedUser) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updatedUser } : null,
+        })),
+
       logout: () => set({ user: null, session: null }),
     }),
     { name: "auth-storage" },

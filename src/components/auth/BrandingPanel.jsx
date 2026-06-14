@@ -1,6 +1,6 @@
 import Logo from "@/components/ui/Logo";
 
-const BrandingPanel = ({ title, subtitle, benefits, children }) => {
+const BrandingPanel = ({ title, subtitle, benefits }) => {
   return (
     <div className="auth-branding-panel">
       {/* Grid pattern */}
@@ -24,9 +24,7 @@ const BrandingPanel = ({ title, subtitle, benefits, children }) => {
           <rect width="100%" height="100%" fill="url(#grid)" />
         </svg>
       </div>
-
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#6324eb]/20 blur-[120px] rounded-full" />
-
       {/* Logo */}
       <div className="relative z-10 flex items-center gap-3 text-white">
         <div className="size-10 text-[#6324eb]">
@@ -34,16 +32,13 @@ const BrandingPanel = ({ title, subtitle, benefits, children }) => {
         </div>
         <h2 className="text-2xl font-black tracking-tight">duoJava</h2>
       </div>
-
       {/* Content */}
       <div className="relative z-10 flex flex-col gap-6 max-w-lg">
         <div>
           <h1 className="text-white text-5xl font-black leading-tight tracking-tight mb-4">
             {title}
           </h1>
-          <p className="text-slate-300 text-lg leading-relaxed">
-            {subtitle}
-          </p>
+          <p className="text-slate-300 text-lg leading-relaxed">{subtitle}</p>
         </div>
 
         {benefits && (
@@ -59,7 +54,28 @@ const BrandingPanel = ({ title, subtitle, benefits, children }) => {
           </div>
         )}
 
-        {children}
+        <div className="code-card-container rotate-2 hover:rotate-0">
+          <div className="flex gap-1.5 mb-4">
+            <div className="code-dot bg-red-500" />
+            <div className="code-dot bg-yellow-500" />
+            <div className="code-dot bg-green-500" />
+          </div>
+          <code className="text-sm font-mono block text-slate-300">
+            <span className="text-[#6324eb]">public class</span>{" "}
+            <span className="text-yellow-400">Main</span> {"{"}
+            <br />
+            &nbsp;&nbsp;
+            <span className="text-[#6324eb]">public static void</span>{" "}
+            <span className="text-blue-400">main</span>(String[] args) {"{"}
+            <br />
+            &nbsp;&nbsp;&nbsp;&nbsp;System.out.println(
+            <span className="text-green-400">"Keep coding!"</span>);
+            <br />
+            &nbsp;&nbsp;{"}"}
+            <br />
+            {"}"}
+          </code>
+        </div>
       </div>
       <div /> {/* Spacer to match the justify-between */}
     </div>

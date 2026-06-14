@@ -7,3 +7,4 @@ export const isUsernameAvailable = (username) =>
 export const getCurrentCourse = () => api.get("/courses/current");
 export const getCoursesProgress = () => api.get("/courses/progress");
 export const getLeaderboard = () => api.get("/leaderboard");
+export const updateProfile = (profileData) => api.patch("/users/me", profileData);

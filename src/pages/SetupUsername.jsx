@@ -53,7 +53,9 @@ export default function SetupUsername() {
       if (updateError) throw updateError;
 
       if (!updated?.username) {
-        throw new Error("No se pudo guardar el nombre de usuario. Por favor, inténtalo de nuevo.");
+        throw new Error(
+          "No se pudo guardar el nombre de usuario. Por favor, inténtalo de nuevo.",
+        );
       }
 
       setAuth(
@@ -102,7 +104,9 @@ export default function SetupUsername() {
                 Nombre de usuario
               </label>
               <div className="relative flex items-center">
-                <span className="absolute left-4 text-slate-500 select-none">@</span>
+                <span className="absolute left-4 text-slate-500 select-none">
+                  @
+                </span>
                 <input
                   type="text"
                   value={username}
@@ -119,7 +123,9 @@ export default function SetupUsername() {
                 />
                 <span className="absolute right-3 material-symbols-outlined text-xl">
                   {checking ? (
-                    <span className="text-slate-400 text-sm animate-spin">sync</span>
+                    <span className="text-slate-400 text-sm animate-spin">
+                      sync
+                    </span>
                   ) : available === true ? (
                     <span className="text-emerald-500">check_circle</span>
                   ) : available === false ? (
@@ -127,9 +133,19 @@ export default function SetupUsername() {
                   ) : null}
                 </span>
               </div>
-              {available === false && <p className="text-xs text-red-400">Nombre de usuario ya ocupado</p>}
-              {available === true && <p className="text-xs text-emerald-400">¡Nombre de usuario disponible!</p>}
-              <p className="text-xs text-slate-500">Solo letras, números y guiones bajos. 3-20 caracteres.</p>
+              {available === false && (
+                <p className="text-xs text-red-400">
+                  Nombre de usuario ya ocupado
+                </p>
+              )}
+              {available === true && (
+                <p className="text-xs text-emerald-400">
+                  ¡Nombre de usuario disponible!
+                </p>
+              )}
+              <p className="text-xs text-slate-500">
+                Solo letras, números y guiones bajos. 3-20 caracteres.
+              </p>
             </div>
 
             <button
